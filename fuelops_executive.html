@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FuelOps — Executive Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#0B1C2E;--blue:#1A5FBF;--blue2:#124A99;--sky:#5AABFF;--green:#1D9E75;
+  --amber:#C07800;--red:#E24B4A;--purple:#7F77DD;--text:#111827;--text2:#374151;
+  --text3:#6B7280;--border:#D1D9E0;--bg:#F5F6F8;--bg2:#FFFFFF;--card-shadow:0 2px 10px rgba(11,28,46,0.08)}
+html{font-size:15px}
+body{font-family:"Nunito",sans-serif;background:var(--navy);color:#fff;min-height:100vh;display:flex;flex-direction:column}
+a{text-decoration:none;color:var(--sky)}
+/* TOP BAR */
+.topbar{background:#0D2140;border-bottom:2px solid rgba(30,95,191,0.4);padding:8px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;flex-shrink:0}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.tb-logo{font-family:"Syne",sans-serif;font-size:1.1rem;font-weight:800;color:#fff}
+.tb-logo span{color:var(--sky)}
+.role-badge{padding:3px 10px;border-radius:999px;font-size:10px;font-weight:700;background:rgba(90,171,255,0.15);border:1px solid rgba(90,171,255,0.35);color:var(--sky)}
+.tb-back{font-size:11px;color:rgba(255,255,255,0.5);padding:4px 10px;border-radius:6px;border:0.5px solid rgba(255,255,255,0.15);cursor:pointer;transition:all .15s}
+.tb-back:hover{background:rgba(255,255,255,0.08);color:#fff}
+/* FILTERS */
+.filters{background:#0D2140;border-bottom:1px solid rgba(30,95,191,0.2);padding:7px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0}
+.filters label{font-size:10px;color:rgba(255,255,255,0.45);font-weight:600;text-transform:uppercase;letter-spacing:.07em}
+.filters select{font-size:11px;padding:3px 8px;border-radius:6px;border:0.5px solid rgba(90,171,255,0.3);background:rgba(255,255,255,0.06);color:#fff;cursor:pointer}
+.filters select option{background:#0D2140;color:#fff}
+/* TABS */
+.tabs{background:#0B1C2E;border-bottom:1px solid rgba(30,95,191,0.2);padding:0 16px;display:flex;gap:2px;overflow-x:auto;flex-shrink:0}
+.tab{padding:8px 14px;font-size:11px;font-weight:600;color:rgba(255,255,255,0.45);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s}
+.tab.on{color:var(--sky);border-bottom-color:var(--sky)}
+.tab:hover:not(.on){color:rgba(255,255,255,0.75)}
+/* BODY */
+.body{padding:14px 16px;flex:1;overflow-y:auto}
+.view{display:none}.view.on{display:block}
+/* KPI ROW */
+.krow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.kpi{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 13px}
+.kl{font-size:10px;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px}
+.kv{font-size:20px;font-weight:700;color:#fff;line-height:1.1}
+.kd{font-size:10px;margin-top:3px}.kg{color:#4ade80}.kr{color:#f87171}.kn{color:rgba(255,255,255,0.4)}
+/* CHART CARDS */
+.crow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.cc{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:13px}
+.cc.full{grid-column:1/-1}
+.ct{font-size:12px;font-weight:600;color:rgba(255,255,255,0.85);margin-bottom:8px}
+canvas{display:block;width:100%!important}
+/* TABLES */
+.tc{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:13px;margin-bottom:12px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed}
+th{text-align:left;padding:5px 8px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,0.4);border-bottom:0.5px solid rgba(255,255,255,0.1)}
+td{padding:7px 8px;border-bottom:0.5px solid rgba(255,255,255,0.06);color:rgba(255,255,255,0.7);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
+td.b{color:#fff;font-weight:600}
+.bx{display:inline-flex;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:600}
+.ok{background:rgba(74,222,128,0.15);color:#4ade80}
+.wa{background:rgba(251,191,36,0.15);color:#fbbf24}
+.er{background:rgba(248,113,113,0.15);color:#f87171}
+.in{background:rgba(90,171,255,0.15);color:var(--sky)}
+/* BAR ROWS */
+.br{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.bl{font-size:10px;color:rgba(255,255,255,0.55);width:96px;flex-shrink:0;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bg-b{flex:1;height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden}
+.bf{height:100%;border-radius:4px}
+.bv{font-size:10px;color:rgba(255,255,255,0.4);width:52px;flex-shrink:0}
+/* SEGMENTS */
+.seg{display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap}
+.sp{padding:4px 11px;border-radius:999px;font-size:11px;cursor:pointer;border:0.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.5)}
+.sp.on{background:rgba(90,171,255,0.2);border-color:rgba(90,171,255,0.5);color:var(--sky)}
+/* MISC */
+.alert-row{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:10px;border:0.5px solid rgba(255,255,255,0.1);margin-bottom:8px;background:rgba(255,255,255,0.03)}
+.at{font-size:12px;font-weight:600;color:#fbbf24;margin-bottom:2px}
+.as{font-size:11px;color:rgba(255,255,255,0.55)}
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.calc-card{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px}
+.inp-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.inp-lbl{font-size:11px;color:rgba(255,255,255,0.55)}
+.inp-row input,.inp-row select{font-size:11px;padding:4px 8px;border-radius:6px;border:0.5px solid rgba(90,171,255,0.3);background:rgba(255,255,255,0.06);color:#fff;width:110px}
+.result-ok{background:rgba(74,222,128,0.12);border:0.5px solid rgba(74,222,128,0.3);border-radius:10px;padding:10px;text-align:center;margin-top:8px}
+.result-warn{background:rgba(248,113,113,0.12);border:0.5px solid rgba(248,113,113,0.3);border-radius:10px;padding:10px;text-align:center;margin-top:8px}
+.rv{font-size:18px;font-weight:700}.rl{font-size:10px;margin-top:2px;color:rgba(255,255,255,0.5)}
+@media(max-width:640px){.krow{grid-template-columns:1fr 1fr}.crow{grid-template-columns:1fr}.calc-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="tb-logo">Fuel<span>Ops</span></span>
+    <span class="role-badge">CEO / Board</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <span style="font-size:11px;color:rgba(255,255,255,0.35)">A320 Family Fleet</span>
+    <a class="tb-back" href="index.html">&#8592; All modules</a>
+  </div>
+</div>
+<div class="filters"><label>Period</label><select><option>YTD 2025</option><option>Q1 2025</option><option>H1 2025</option><option>Full 2024</option></select><label>Base</label><select><option>All bases</option><option>BOM</option><option>DEL</option><option>BLR</option><option>HYD</option></select></div>
+<div class="tabs"><div class="tab on" onclick="selTab(this,0)">Fleet overview</div><div class="tab" onclick="selTab(this,1)">Route & season</div><div class="tab" onclick="selTab(this,2)">Efficiency & emissions</div></div>
+<div class="body">
+<div class="view on">
+  <div class="krow">
+    <div class="kpi"><div class="kl">Fleet fuel cost YTD</div><div class="kv">&#8377;142.6 Cr</div><div class="kd kr">&#8679; 2.1% vs budget</div></div>
+    <div class="kpi"><div class="kl">Avg burn (kg/hr)</div><div class="kv">2,418</div><div class="kd kg">&#8678; 1.4% vs target</div></div>
+    <div class="kpi"><div class="kl">Fuel as % CASK</div><div class="kv">34.8%</div><div class="kd kg">&#8678; 1.1% improvement</div></div>
+    <div class="kpi"><div class="kl">Tankering savings</div><div class="kv">&#8377;4.2 Cr</div><div class="kd kn">YTD realised</div></div>
+  </div>
+  <div class="crow">
+    <div class="cc"><div class="ct">Monthly fuel cost vs budget (&#8377; Cr)</div><canvas id="e1" height="130"></canvas></div>
+    <div class="cc"><div class="ct">Avg burn kg/hr by month</div><canvas id="e2" height="130"></canvas></div>
+  </div>
+  <div class="cc full" style="margin-bottom:12px"><div class="ct">Cost by aircraft type</div>
+    <div class="br"><div class="bl">A320</div><div class="bg-b"><div class="bf" style="width:78%;background:#5AABFF"></div></div><div class="bv">&#8377;51.2 Cr</div></div>
+    <div class="br"><div class="bl">A321</div><div class="bg-b"><div class="bf" style="width:65%;background:#5AABFF"></div></div><div class="bv">&#8377;42.7 Cr</div></div>
+    <div class="br"><div class="bl">A320neo</div><div class="bg-b"><div class="bf" style="width:42%;background:#4ade80"></div></div><div class="bv">&#8377;27.5 Cr</div></div>
+    <div class="br"><div class="bl">A321neo</div><div class="bg-b"><div class="bf" style="width:28%;background:#4ade80"></div></div><div class="bv">&#8377;18.2 Cr</div></div>
+  </div>
+  <div class="tc"><div class="ct">Top airports — fuel cost YTD</div>
+    <table><thead><tr><th style="width:14%">Airport</th><th style="width:14%">Uplift MT</th><th style="width:14%">Avg &#8377;/kg</th><th style="width:14%">Total cost</th><th style="width:14%">vs network</th><th style="width:30%">Status</th></tr></thead>
+    <tbody>
+      <tr><td class="b">BOM</td><td>18,420</td><td>82.4</td><td>&#8377;15.2 Cr</td><td><span class="bx wa">+4.2%</span></td><td>&#9646; Monitor</td></tr>
+      <tr><td class="b">DEL</td><td>16,810</td><td>80.1</td><td>&#8377;13.5 Cr</td><td><span class="bx ok">-1.1%</span></td><td>&#9646; Normal</td></tr>
+      <tr><td class="b">BLR</td><td>9,240</td><td>83.8</td><td>&#8377;7.7 Cr</td><td><span class="bx er">+6.8%</span></td><td>&#9650; Alert</td></tr>
+      <tr><td class="b">HYD</td><td>7,660</td><td>79.3</td><td>&#8377;6.1 Cr</td><td><span class="bx ok">-2.3%</span></td><td>&#9646; Normal</td></tr>
+      <tr><td class="b">MAA</td><td>6,980</td><td>81.0</td><td>&#8377;5.7 Cr</td><td><span class="bx wa">+1.8%</span></td><td>&#9646; Monitor</td></tr>
+    </tbody></table>
+  </div>
+</div>
+<div class="view">
+  <div class="cc full" style="margin-bottom:12px"><div class="ct">Route-wise avg burn (kg/hr)</div><canvas id="e3" height="140"></canvas></div>
+  <div class="cc full"><div class="ct">Seasonal fuel demand — summer vs winter (MT)</div><canvas id="e4" height="140"></canvas></div>
+</div>
+<div class="view">
+  <div class="crow">
+    <div class="cc"><div class="ct">Fleet efficiency trend — kg per ATK</div><canvas id="e5" height="160"></canvas></div>
+    <div class="cc"><div class="ct">CO&#8322; emissions (Tonnes / month)</div><canvas id="e6" height="160"></canvas></div>
+  </div>
+</div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+var _charts={};
+function gc(id){var c=document.getElementById(id);if(!c)return null;if(_charts[id]){_charts[id].destroy();delete _charts[id];}return c.getContext('2d');}
+function rn(v,p){p=p||0.08;return+(v+(Math.random()-0.5)*v*p).toFixed(1);}
+function ri(v,p){p=p||0.1;return Math.round(v+(Math.random()-0.5)*v*p);}
+function fg(){return'rgba(255,255,255,0.5)';}
+function gr(){return'rgba(255,255,255,0.06)';}
+function bo(ymin){var o={responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:gr()},ticks:{color:fg(),font:{size:9}}},y:{grid:{color:gr()},ticks:{color:fg(),font:{size:9}}}}};if(ymin!==undefined)o.scales.y.min=ymin;return o;}
+function selTab(el,idx){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  el.classList.add('on');
+  var views=document.querySelectorAll('.view');
+  if(views[idx])views[idx].classList.add('on');
+  if(typeof onTabChange==='function')onTabChange(idx);
+}
+
+function initCharts(){
+  var m=['Jan','Feb','Mar','Apr','May','Jun'],r=['BOM-DEL','BOM-BLR','DEL-CCU','HYD-MAA','BLR-HYD','DEL-BLR','CCU-BLR','MAA-DEL'],o=bo();
+  var c1=gc('e1');if(c1)_charts.e1=new Chart(c1,{type:'bar',data:{labels:m,datasets:[{label:'Actual',data:m.map(()=>rn(23.8,0.08)),backgroundColor:'#5AABFF66'},{label:'Budget',data:[23,23,23,23,23,23],type:'line',borderColor:'#f87171',borderDash:[4,4],pointRadius:0,fill:false,tension:0}]},options:{...o,plugins:{legend:{display:true,labels:{color:fg(),font:{size:9}}}}}});
+  var c2=gc('e2');if(c2)_charts.e2=new Chart(c2,{type:'line',data:{labels:m,datasets:[{data:m.map(()=>rn(2418,0.04)),borderColor:'#4ade80',tension:0.3,fill:false,pointRadius:3}]},options:{...o,...{scales:{x:{grid:{color:gr()},ticks:{color:fg(),font:{size:9}}},y:{grid:{color:gr()},ticks:{color:fg(),font:{size:9}},min:2350}}}}});
+  var c3=gc('e3');if(c3)_charts.e3=new Chart(c3,{type:'bar',data:{labels:r,datasets:[{data:r.map(()=>ri(2418,0.08)),backgroundColor:'#5AABFF55',borderColor:'#5AABFF',borderWidth:1}]},options:{...o,...{scales:{x:{grid:{color:gr()},ticks:{color:fg(),font:{size:9}}},y:{grid:{color:gr()},ticks:{color:fg(),font:{size:9}},min:2250}}}}});
+  var c4=gc('e4');if(c4)_charts.e4=new Chart(c4,{type:'bar',data:{labels:['Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun'],datasets:[{label:'Winter',data:[4200,4800,5100,5200,4900,4600,0,0,0],backgroundColor:'#7F77DD66'},{label:'Summer',data:[0,0,0,0,0,0,5400,5800,5600],backgroundColor:'#1D9E7566'}]},options:{...o,plugins:{legend:{display:true,labels:{color:fg(),font:{size:9}}}}}});
+  var c5=gc('e5');if(c5)_charts.e5=new Chart(c5,{type:'line',data:{labels:m,datasets:[{data:m.map(()=>rn(0.318,0.04)),borderColor:'#5AABFF',tension:0.3,fill:true,backgroundColor:'#5AABFF15',pointRadius:3}]},options:{...o,...{scales:{x:{grid:{color:gr()},ticks:{color:fg(),font:{size:9}}},y:{grid:{color:gr()},ticks:{color:fg(),font:{size:9}},min:0.31,max:0.33}}}}});
+  var c6=gc('e6');if(c6)_charts.e6=new Chart(c6,{type:'bar',data:{labels:m,datasets:[{data:m.map(()=>ri(64800,0.06)),backgroundColor:'#f8711166',borderColor:'#f87171',borderWidth:1}]},options:o});
+}
+window.addEventListener('load',function(){if(typeof initCharts==='function')initCharts();});
+</script>
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FuelOps — Advanced Analytics</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#0B1C2E;--blue:#1A5FBF;--blue2:#124A99;--sky:#5AABFF;--green:#1D9E75;
+  --amber:#C07800;--red:#E24B4A;--purple:#7F77DD;--text:#111827;--text2:#374151;
+  --text3:#6B7280;--border:#D1D9E0;--bg:#F5F6F8;--bg2:#FFFFFF;--card-shadow:0 2px 10px rgba(11,28,46,0.08)}
+html{font-size:15px}
+body{font-family:"Nunito",sans-serif;background:var(--navy);color:#fff;min-height:100vh;display:flex;flex-direction:column}
+a{text-decoration:none;color:var(--sky)}
+/* TOP BAR */
+.topbar{background:#0D2140;border-bottom:2px solid rgba(30,95,191,0.4);padding:8px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;flex-shrink:0}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.tb-logo{font-family:"Syne",sans-serif;font-size:1.1rem;font-weight:800;color:#fff}
+.tb-logo span{color:var(--sky)}
+.role-badge{padding:3px 10px;border-radius:999px;font-size:10px;font-weight:700;background:rgba(90,171,255,0.15);border:1px solid rgba(90,171,255,0.35);color:var(--sky)}
+.tb-back{font-size:11px;color:rgba(255,255,255,0.5);padding:4px 10px;border-radius:6px;border:0.5px solid rgba(255,255,255,0.15);cursor:pointer;transition:all .15s}
+.tb-back:hover{background:rgba(255,255,255,0.08);color:#fff}
+/* FILTERS */
+.filters{background:#0D2140;border-bottom:1px solid rgba(30,95,191,0.2);padding:7px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0}
+.filters label{font-size:10px;color:rgba(255,255,255,0.45);font-weight:600;text-transform:uppercase;letter-spacing:.07em}
+.filters select{font-size:11px;padding:3px 8px;border-radius:6px;border:0.5px solid rgba(90,171,255,0.3);background:rgba(255,255,255,0.06);color:#fff;cursor:pointer}
+.filters select option{background:#0D2140;color:#fff}
+/* TABS */
+.tabs{background:#0B1C2E;border-bottom:1px solid rgba(30,95,191,0.2);padding:0 16px;display:flex;gap:2px;overflow-x:auto;flex-shrink:0}
+.tab{padding:8px 14px;font-size:11px;font-weight:600;color:rgba(255,255,255,0.45);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s}
+.tab.on{color:var(--sky);border-bottom-color:var(--sky)}
+.tab:hover:not(.on){color:rgba(255,255,255,0.75)}
+/* BODY */
+.body{padding:14px 16px;flex:1;overflow-y:auto}
+.view{display:none}.view.on{display:block}
+/* KPI ROW */
+.krow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.kpi{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 13px}
+.kl{font-size:10px;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px}
+.kv{font-size:20px;font-weight:700;color:#fff;line-height:1.1}
+.kd{font-size:10px;margin-top:3px}.kg{color:#4ade80}.kr{color:#f87171}.kn{color:rgba(255,255,255,0.4)}
+/* CHART CARDS */
+.crow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.cc{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:13px}
+.cc.full{grid-column:1/-1}
+.ct{font-size:12px;font-weight:600;color:rgba(255,255,255,0.85);margin-bottom:8px}
+canvas{display:block;width:100%!important}
+/* TABLES */
+.tc{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:13px;margin-bottom:12px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed}
+th{text-align:left;padding:5px 8px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,0.4);border-bottom:0.5px solid rgba(255,255,255,0.1)}
+td{padding:7px 8px;border-bottom:0.5px solid rgba(255,255,255,0.06);color:rgba(255,255,255,0.7);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
+td.b{color:#fff;font-weight:600}
+.bx{display:inline-flex;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:600}
+.ok{background:rgba(74,222,128,0.15);color:#4ade80}
+.wa{background:rgba(251,191,36,0.15);color:#fbbf24}
+.er{background:rgba(248,113,113,0.15);color:#f87171}
+.in{background:rgba(90,171,255,0.15);color:var(--sky)}
+/* BAR ROWS */
+.br{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.bl{font-size:10px;color:rgba(255,255,255,0.55);width:96px;flex-shrink:0;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bg-b{flex:1;height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden}
+.bf{height:100%;border-radius:4px}
+.bv{font-size:10px;color:rgba(255,255,255,0.4);width:52px;flex-shrink:0}
+/* SEGMENTS */
+.seg{display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap}
+.sp{padding:4px 11px;border-radius:999px;font-size:11px;cursor:pointer;border:0.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.5)}
+.sp.on{background:rgba(90,171,255,0.2);border-color:rgba(90,171,255,0.5);color:var(--sky)}
+/* MISC */
+.alert-row{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:10px;border:0.5px solid rgba(255,255,255,0.1);margin-bottom:8px;background:rgba(255,255,255,0.03)}
+.at{font-size:12px;font-weight:600;color:#fbbf24;margin-bottom:2px}
+.as{font-size:11px;color:rgba(255,255,255,0.55)}
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.calc-card{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px}
+.inp-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.inp-lbl{font-size:11px;color:rgba(255,255,255,0.55)}
+.inp-row input,.inp-row select{font-size:11px;padding:4px 8px;border-radius:6px;border:0.5px solid rgba(90,171,255,0.3);background:rgba(255,255,255,0.06);color:#fff;width:110px}
+.result-ok{background:rgba(74,222,128,0.12);border:0.5px solid rgba(74,222,128,0.3);border-radius:10px;padding:10px;text-align:center;margin-top:8px}
+.result-warn{background:rgba(248,113,113,0.12);border:0.5px solid rgba(248,113,113,0.3);border-radius:10px;padding:10px;text-align:center;margin-top:8px}
+.rv{font-size:18px;font-weight:700}.rl{font-size:10px;margin-top:2px;color:rgba(255,255,255,0.5)}
+@media(max-width:640px){.krow{grid-template-columns:1fr 1fr}.crow{grid-template-columns:1fr}.calc-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="tb-logo">Fuel<span>Ops</span></span>
+    <span class="role-badge">Advanced</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <span style="font-size:11px;color:rgba(255,255,255,0.35)">A320 Family Fleet</span>
+    <a class="tb-back" href="index.html">&#8592; All modules</a>
+  </div>
+</div>
+<div class="filters"><label>Period</label><select><option>MTD</option><option>Last 90d</option><option>YTD</option></select></div>
+<div class="tabs"><div class="tab on" onclick="selTab(this,0)">Tankering engine</div><div class="tab" onclick="selTab(this,1)">Emissions / CORSIA</div><div class="tab" onclick="selTab(this,2)">FOB analysis</div><div class="tab" onclick="selTab(this,3)">Predictive alerts</div></div>
+<div class="body">
+<div class="view on">
+  <div class="krow">
+    <div class="kpi"><div class="kl">Tankering saving MTD</div><div class="kv">&#8377;48.2 L</div><div class="kd kg">142 sectors</div></div>
+    <div class="kpi"><div class="kl">Opportunities</div><div class="kv">38 routes</div><div class="kd kn">Price diff &#8805;&#8377;3/kg</div></div>
+    <div class="kpi"><div class="kl">Foregone savings</div><div class="kv">&#8377;12.4 L</div><div class="kd kr">Not actioned</div></div>
+    <div class="kpi"><div class="kl">Avg payload penalty</div><div class="kv">312 kg</div><div class="kd kn">Per tankering sector</div></div>
+  </div>
+  <div class="calc-grid">
+    <div class="calc-card">
+      <div class="ct" style="margin-bottom:10px">Live tankering calculator</div>
+      <div class="inp-row"><span class="inp-lbl">Origin &#8377;/kg</span><input type="number" id="a-op" value="80" oninput="calcA()"></div>
+      <div class="inp-row"><span class="inp-lbl">Destination &#8377;/kg</span><input type="number" id="a-dp" value="87" oninput="calcA()"></div>
+      <div class="inp-row"><span class="inp-lbl">Extra uplift (kg)</span><input type="number" id="a-ex" value="2000" oninput="calcA()"></div>
+      <div class="inp-row"><span class="inp-lbl">Burn penalty (kg/1000kg)</span><input type="number" id="a-pen" value="48" oninput="calcA()"></div>
+      <div id="a-res"></div>
+    </div>
+    <div class="cc"><div class="ct">Route price differentials (&#8377;/kg)</div><canvas id="a1" height="200"></canvas></div>
+  </div>
+</div>
+<div class="view">
+  <div class="krow">
+    <div class="kpi"><div class="kl">CO&#8322; YTD</div><div class="kv">389,420 T</div><div class="kd kr">+2.1% vs prior year</div></div>
+    <div class="kpi"><div class="kl">kg CO&#8322;/pax-km</div><div class="kv">0.0842</div><div class="kd kg">-1.4% improvement</div></div>
+    <div class="kpi"><div class="kl">CORSIA offset needed</div><div class="kv">12,400 T</div><div class="kd kn">Credits required</div></div>
+    <div class="kpi"><div class="kl">SAF blend</div><div class="kv">1.8%</div><div class="kd kn">Target 2%</div></div>
+  </div>
+  <div class="crow">
+    <div class="cc"><div class="ct">Monthly CO&#8322; trend (tonnes)</div><canvas id="a2" height="150"></canvas></div>
+    <div class="cc"><div class="ct">CO&#8322; per pax-km by route</div><canvas id="a3" height="150"></canvas></div>
+  </div>
+</div>
+<div class="view">
+  <div class="krow">
+    <div class="kpi"><div class="kl">Avg FOB on arrival</div><div class="kv">1,842 kg</div><div class="kd kr">+12% above plan</div></div>
+    <div class="kpi"><div class="kl">High FOB events</div><div class="kv">84</div><div class="kd kr">&gt;200 kg excess</div></div>
+    <div class="kpi"><div class="kl">Value excess fuel</div><div class="kv">&#8377;7.8 Cr</div><div class="kd kn">Carried unnecessarily</div></div>
+    <div class="kpi"><div class="kl">Optimisation potential</div><div class="kv">&#8377;4.2 Cr</div><div class="kd kg">If FOB optimised</div></div>
+  </div>
+  <div class="crow">
+    <div class="cc"><div class="ct">FOB distribution — arrival excess</div><canvas id="a4" height="150"></canvas></div>
+    <div class="cc"><div class="ct">Route-wise avg FOB excess (kg)</div><canvas id="a5" height="150"></canvas></div>
+  </div>
+</div>
+<div class="view">
+  <div class="krow">
+    <div class="kpi"><div class="kl">Active anomalies</div><div class="kv">7</div><div class="kd kr">3 high priority</div></div>
+    <div class="kpi"><div class="kl">Engine deterioration</div><div class="kv">2 tails</div><div class="kd kr">VT-IDC, VT-IDG</div></div>
+    <div class="kpi"><div class="kl">Predicted over-uplift</div><div class="kv">14 sectors</div><div class="kd kn">Next 7 days</div></div>
+    <div class="kpi"><div class="kl">Model accuracy</div><div class="kv">94.2%</div><div class="kd kg">Last 30-day validation</div></div>
+  </div>
+  <div class="alert-row"><span style="font-size:18px;flex-shrink:0">&#9888;</span><div><div class="at">VT-IDC — progressive burn rate increase (+4.8% over 12 sectors)</div><div class="as">Consistent upward trend. Probable: compressor fouling. Recommend engine wash before next 50-hr check.</div></div></div>
+  <div class="alert-row"><span style="font-size:18px;flex-shrink:0">&#9888;</span><div><div class="at">VT-IDG — fuel flow asymmetry detected (L engine +2.1% vs R)</div><div class="as">Possible fuel metering unit drift. Schedule borescope inspection within 200 cycles.</div></div></div>
+  <div class="alert-row"><span style="font-size:18px;flex-shrink:0">&#9432;</span><div><div class="at">BLR uplifts trending 6.2% above plan — last 14 days</div><div class="as">Possible pricing error or systematic planning issue. Audit fuel plans for BLR departures.</div></div></div>
+</div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+var _charts={};
+function gc(id){var c=document.getElementById(id);if(!c)return null;if(_charts[id]){_charts[id].destroy();delete _charts[id];}return c.getContext('2d');}
+function rn(v,p){p=p||0.08;return+(v+(Math.random()-0.5)*v*p).toFixed(1);}
+function ri(v,p){p=p||0.1;return Math.round(v+(Math.random()-0.5)*v*p);}
+function fg(){return'rgba(255,255,255,0.5)';}
+function gr(){return'rgba(255,255,255,0.06)';}
+function bo(ymin){var o={responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:gr()},ticks:{color:fg(),font:{size:9}}},y:{grid:{color:gr()},ticks:{color:fg(),font:{size:9}}}}};if(ymin!==undefined)o.scales.y.min=ymin;return o;}
+function selTab(el,idx){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  el.classList.add('on');
+  var views=document.querySelectorAll('.view');
+  if(views[idx])views[idx].classList.add('on');
+  if(typeof onTabChange==='function')onTabChange(idx);
+}
+
+var routes=['BOM-DEL','BOM-BLR','DEL-CCU','HYD-MAA','BLR-HYD','DEL-BLR','CCU-BLR','MAA-DEL'];var months=['Jan','Feb','Mar','Apr','May','Jun'];
+function calcA(){
+  var op=+document.getElementById('a-op').value||80;
+  var dp=+document.getElementById('a-dp').value||87;
+  var ex=+document.getElementById('a-ex').value||2000;
+  var pen=+document.getElementById('a-pen').value||48;
+  var gross=ex*(dp-op);var penalty=(ex/1000)*pen*op;var net=gross-penalty;
+  var el=document.getElementById('a-res');
+  if(net>0){el.className='result-ok';el.innerHTML='<div class="rv">&#8377;'+net.toLocaleString('en-IN',{maximumFractionDigits:0})+'</div><div class="rl">Net saving — Tankering recommended</div>';}
+  else{el.className='result-warn';el.innerHTML='<div class="rv">Not viable</div><div class="rl">Penalty exceeds saving</div>';}
+}
+function initCharts(){
+  var o=bo();
+  var c1=gc('a1');if(c1)_charts.a1=new Chart(c1,{type:'bar',data:{labels:routes,datasets:[{data:routes.map(()=>rn(4,0.6)),backgroundColor:'#4ade8066',borderColor:'#4ade80',borderWidth:1}]},options:{...o,indexAxis:'y'}});
+  var c2=gc('a2');if(c2)_charts.a2=new Chart(c2,{type:'line',data:{labels:months,datasets:[{data:months.map(()=>ri(64800,0.06)),borderColor:'#f87171',tension:0.3,fill:true,backgroundColor:'#f8711115',pointRadius:3}]},options:o});
+  var c3=gc('a3');if(c3)_charts.a3=new Chart(c3,{type:'bar',data:{labels:routes.slice(0,6),datasets:[{data:routes.slice(0,6).map(()=>rn(0.0842,0.1)),backgroundColor:'#f8711155',borderColor:'#f87171',borderWidth:1}]},options:o});
+  var c4=gc('a4');if(c4)_charts.a4=new Chart(c4,{type:'bar',data:{labels:Array.from({length:12},(_,i)=>i*100+'-'+(i+1)*100),datasets:[{data:Array.from({length:12},()=>ri(15,0.5)),backgroundColor:'#5AABFF55',borderColor:'#5AABFF',borderWidth:1}]},options:o});
+  var c5=gc('a5');if(c5)_charts.a5=new Chart(c5,{type:'bar',data:{labels:routes,datasets:[{data:routes.map(()=>ri(180,0.4)),backgroundColor:routes.map(()=>ri(180,0.4)>200?'#f8711155':'#5AABFF33'),borderWidth:1}]},options:o});
+  calcA();
+}
+window.addEventListener('load',function(){if(typeof initCharts==='function')initCharts();});
+</script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FuelOps — Tail-Wise Analytics</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#0B1C2E;--blue:#1A5FBF;--blue2:#124A99;--sky:#5AABFF;--green:#1D9E75;
+  --amber:#C07800;--red:#E24B4A;--purple:#7F77DD;--text:#111827;--text2:#374151;
+  --text3:#6B7280;--border:#D1D9E0;--bg:#F5F6F8;--bg2:#FFFFFF;--card-shadow:0 2px 10px rgba(11,28,46,0.08)}
+html{font-size:15px}
+body{font-family:"Nunito",sans-serif;background:var(--navy);color:#fff;min-height:100vh;display:flex;flex-direction:column}
+a{text-decoration:none;color:var(--sky)}
+/* TOP BAR */
+.topbar{background:#0D2140;border-bottom:2px solid rgba(30,95,191,0.4);padding:8px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;flex-shrink:0}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.tb-logo{font-family:"Syne",sans-serif;font-size:1.1rem;font-weight:800;color:#fff}
+.tb-logo span{color:var(--sky)}
+.role-badge{padding:3px 10px;border-radius:999px;font-size:10px;font-weight:700;background:rgba(90,171,255,0.15);border:1px solid rgba(90,171,255,0.35);color:var(--sky)}
+.tb-back{font-size:11px;color:rgba(255,255,255,0.5);padding:4px 10px;border-radius:6px;border:0.5px solid rgba(255,255,255,0.15);cursor:pointer;transition:all .15s}
+.tb-back:hover{background:rgba(255,255,255,0.08);color:#fff}
+/* FILTERS */
+.filters{background:#0D2140;border-bottom:1px solid rgba(30,95,191,0.2);padding:7px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0}
+.filters label{font-size:10px;color:rgba(255,255,255,0.45);font-weight:600;text-transform:uppercase;letter-spacing:.07em}
+.filters select{font-size:11px;padding:3px 8px;border-radius:6px;border:0.5px solid rgba(90,171,255,0.3);background:rgba(255,255,255,0.06);color:#fff;cursor:pointer}
+.filters select option{background:#0D2140;color:#fff}
+/* TABS */
+.tabs{background:#0B1C2E;border-bottom:1px solid rgba(30,95,191,0.2);padding:0 16px;display:flex;gap:2px;overflow-x:auto;flex-shrink:0}
+.tab{padding:8px 14px;font-size:11px;font-weight:600;color:rgba(255,255,255,0.45);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s}
+.tab.on{color:var(--sky);border-bottom-color:var(--sky)}
+.tab:hover:not(.on){color:rgba(255,255,255,0.75)}
+/* BODY */
+.body{padding:14px 16px;flex:1;overflow-y:auto}
+.view{display:none}.view.on{display:block}
+/* KPI ROW */
+.krow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.kpi{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 13px}
+.kl{font-size:10px;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px}
+.kv{font-size:20px;font-weight:700;color:#fff;line-height:1.1}
+.kd{font-size:10px;margin-top:3px}.kg{color:#4ade80}.kr{color:#f87171}.kn{color:rgba(255,255,255,0.4)}
+/* CHART CARDS */
+.crow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.cc{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:13px}
+.cc.full{grid-column:1/-1}
+.ct{font-size:12px;font-weight:600;color:rgba(255,255,255,0.85);margin-bottom:8px}
+canvas{display:block;width:100%!important}
+/* TABLES */
+.tc{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:13px;margin-bottom:12px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed}
+th{text-align:left;padding:5px 8px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,0.4);border-bottom:0.5px solid rgba(255,255,255,0.1)}
+td{padding:7px 8px;border-bottom:0.5px solid rgba(255,255,255,0.06);color:rgba(255,255,255,0.7);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
+td.b{color:#fff;font-weight:600}
+.bx{display:inline-flex;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:600}
+.ok{background:rgba(74,222,128,0.15);color:#4ade80}
+.wa{background:rgba(251,191,36,0.15);color:#fbbf24}
+.er{background:rgba(248,113,113,0.15);color:#f87171}
+.in{background:rgba(90,171,255,0.15);color:var(--sky)}
+/* BAR ROWS */
+.br{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.bl{font-size:10px;color:rgba(255,255,255,0.55);width:96px;flex-shrink:0;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bg-b{flex:1;height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden}
+.bf{height:100%;border-radius:4px}
+.bv{font-size:10px;color:rgba(255,255,255,0.4);width:52px;flex-shrink:0}
+/* SEGMENTS */
+.seg{display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap}
+.sp{padding:4px 11px;border-radius:999px;font-size:11px;cursor:pointer;border:0.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.5)}
+.sp.on{background:rgba(90,171,255,0.2);border-color:rgba(90,171,255,0.5);color:var(--sky)}
+/* MISC */
+.alert-row{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:10px;border:0.5px solid rgba(255,255,255,0.1);margin-bottom:8px;background:rgba(255,255,255,0.03)}
+.at{font-size:12px;font-weight:600;color:#fbbf24;margin-bottom:2px}
+.as{font-size:11px;color:rgba(255,255,255,0.55)}
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.calc-card{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px}
+.inp-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.inp-lbl{font-size:11px;color:rgba(255,255,255,0.55)}
+.inp-row input,.inp-row select{font-size:11px;padding:4px 8px;border-radius:6px;border:0.5px solid rgba(90,171,255,0.3);background:rgba(255,255,255,0.06);color:#fff;width:110px}
+.result-ok{background:rgba(74,222,128,0.12);border:0.5px solid rgba(74,222,128,0.3);border-radius:10px;padding:10px;text-align:center;margin-top:8px}
+.result-warn{background:rgba(248,113,113,0.12);border:0.5px solid rgba(248,113,113,0.3);border-radius:10px;padding:10px;text-align:center;margin-top:8px}
+.rv{font-size:18px;font-weight:700}.rl{font-size:10px;margin-top:2px;color:rgba(255,255,255,0.5)}
+@media(max-width:640px){.krow{grid-template-columns:1fr 1fr}.crow{grid-template-columns:1fr}.calc-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="tb-logo">Fuel<span>Ops</span></span>
+    <span class="role-badge">Aircraft / Tail</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <span style="font-size:11px;color:rgba(255,255,255,0.35)">A320 Family Fleet</span>
+    <a class="tb-back" href="index.html">&#8592; All modules</a>
+  </div>
+</div>
+<div class="filters"><label>Period</label><select><option>Last 30d</option><option>Last 90d</option><option>YTD</option></select><label>Route</label><select><option>All routes</option><option>BOM-DEL</option><option>BOM-BLR</option><option>DEL-CCU</option></select></div>
+<div class="tabs"><div class="tab on" onclick="selTab(this,0)">Tail performance</div><div class="tab" onclick="selTab(this,1)">Anomaly log</div></div>
+<div class="body">
+<div class="seg" id="tail-seg"></div>
+<div class="view on" id="tail-v0">
+  <div class="krow" id="tail-krow"></div>
+  <div class="crow">
+    <div class="cc"><div class="ct" id="tail-ct1">Burn kg/hr — selected tail vs fleet avg</div><canvas id="t1" height="140"></canvas></div>
+    <div class="cc"><div class="ct">Monthly block hours</div><canvas id="t2" height="140"></canvas></div>
+  </div>
+  <div class="cc full" style="margin-bottom:12px"><div class="ct" id="tail-ct2">vs all fleet tails — burn kg/hr</div><canvas id="t3" height="100"></canvas></div>
+  <div class="tc"><div class="ct">Route-wise burn — last 30 days</div>
+    <table><thead><tr><th style="width:18%">Route</th><th style="width:14%">Sectors</th><th style="width:16%">Avg kg/hr</th><th style="width:16%">Fleet avg</th><th style="width:16%">Delta</th><th style="width:20%">Status</th></tr></thead>
+    <tbody id="tail-routes"></tbody></table>
+  </div>
+</div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+var _charts={};
+function gc(id){var c=document.getElementById(id);if(!c)return null;if(_charts[id]){_charts[id].destroy();delete _charts[id];}return c.getContext('2d');}
+function rn(v,p){p=p||0.08;return+(v+(Math.random()-0.5)*v*p).toFixed(1);}
+function ri(v,p){p=p||0.1;return Math.round(v+(Math.random()-0.5)*v*p);}
+function fg(){return'rgba(255,255,255,0.5)';}
+function gr(){return'rgba(255,255,255,0.06)';}
+function bo(ymin){var o={responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:gr()},ticks:{color:fg(),font:{size:9}}},y:{grid:{color:gr()},ticks:{color:fg(),font:{size:9}}}}};if(ymin!==undefined)o.scales.y.min=ymin;return o;}
+function selTab(el,idx){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  el.classList.add('on');
+  var views=document.querySelectorAll('.view');
+  if(views[idx])views[idx].classList.add('on');
+  if(typeof onTabChange==='function')onTabChange(idx);
+}
+
+var tails=['VT-IDA','VT-IDB','VT-IDC','VT-IDD','VT-IDE','VT-IDF','VT-IDG','VT-IDH'];
+var selTail=tails[0];
+var fleetAvg=2418;
+var routes=['BOM-DEL','BOM-BLR','DEL-CCU','HYD-MAA','BLR-HYD','DEL-BLR','CCU-BLR','MAA-DEL'];
+var months=['Jan','Feb','Mar','Apr','May','Jun'];
+
+function buildTailSeg(){
+  document.getElementById('tail-seg').innerHTML=tails.map(t=>'<div class="sp'+(t===selTail?' on':'')+'" onclick="pickTail(\''+t+'\')">'+t+'</div>').join('');
+}
+
+function pickTail(t){selTail=t;buildTailSeg();renderTail();}
+
+function renderTail(){
+  var burn=rn(fleetAvg,0.08);
+  var dev=((burn-fleetAvg)/fleetAvg*100).toFixed(1);
+  document.getElementById('tail-krow').innerHTML=
+    '<div class="kpi"><div class="kl">Avg burn (kg/hr)</div><div class="kv">'+burn+'</div><div class="kd '+(burn<fleetAvg?'kg':'kr')+'">'+dev+'% vs fleet</div></div>'+
+    '<div class="kpi"><div class="kl">Block hrs YTD</div><div class="kv">'+ri(420,0.2)+'</div><div class="kd kn">hrs</div></div>'+
+    '<div class="kpi"><div class="kl">Sectors YTD</div><div class="kv">'+ri(680,0.1)+'</div><div class="kd kn">sectors</div></div>'+
+    '<div class="kpi"><div class="kl">Extra fuel events</div><div class="kv">'+ri(38,0.2)+'</div><div class="kd kn">'+ri(14,0.2)+'% of sectors</div></div>';
+  document.getElementById('tail-ct1').textContent=selTail+' vs fleet avg — burn kg/hr';
+  document.getElementById('tail-ct2').textContent=selTail+' highlighted vs entire fleet';
+  var o=bo(2350);
+  var c1=gc('t1');if(c1)_charts.t1=new Chart(c1,{type:'line',data:{labels:months,datasets:[{label:selTail,data:months.map(()=>rn(burn,0.04)),borderColor:'#5AABFF',tension:0.3,fill:false,pointRadius:3},{label:'Fleet avg',data:months.map(()=>rn(fleetAvg,0.02)),borderColor:'#f87171',borderDash:[4,4],tension:0,fill:false,pointRadius:0}]},options:{...o,plugins:{legend:{display:true,labels:{color:fg(),font:{size:9}}}}}});
+  var c2=gc('t2');if(c2)_charts.t2=new Chart(c2,{type:'bar',data:{labels:months,datasets:[{data:months.map(()=>ri(70,0.15)),backgroundColor:'#1D9E7566',borderColor:'#1D9E75',borderWidth:1}]},options:bo()});
+  var si=tails.indexOf(selTail);
+  var allBurns=tails.map(()=>rn(fleetAvg,0.07));
+  allBurns[si]=burn;
+  var c3=gc('t3');if(c3)_charts.t3=new Chart(c3,{type:'bar',data:{labels:tails,datasets:[{data:allBurns,backgroundColor:tails.map((_,i)=>i===si?'#5AABFF':'#5AABFF22'),borderColor:tails.map((_,i)=>i===si?'#5AABFF':'#5AABFF55'),borderWidth:1}]},options:{...bo(2300),...{plugins:{legend:{display:false}}}}});
+  document.getElementById('tail-routes').innerHTML=routes.slice(0,6).map(r=>{
+    var b=rn(burn,0.06);var d=((b-fleetAvg)/fleetAvg*100).toFixed(1);
+    var cls=Math.abs(+d)<2?'ok':+d>4?'er':'wa';
+    return'<tr><td class="b">'+r+'</td><td>'+ri(18,0.3)+'</td><td>'+b+'</td><td>'+fleetAvg+'</td><td><span class="bx '+cls+'">'+((+d>0)?'+':'')+d+'%</span></td><td><span class="bx '+(cls==='ok'?'ok':'wa')+'">'+(cls==='ok'?'Normal':'Monitor')+'</span></td></tr>';
+  }).join('');
+}
+
+function initCharts(){buildTailSeg();renderTail();}
+window.addEventListener('load',function(){if(typeof initCharts==='function')initCharts();});
+</script>
+</body>
+</html>

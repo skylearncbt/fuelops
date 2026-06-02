@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FuelOps — Fuel Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#0B1C2E;--blue:#1A5FBF;--blue2:#124A99;--sky:#5AABFF;--green:#1D9E75;
+  --amber:#C07800;--red:#E24B4A;--purple:#7F77DD;--text:#111827;--text2:#374151;
+  --text3:#6B7280;--border:#D1D9E0;--bg:#F5F6F8;--bg2:#FFFFFF;--card-shadow:0 2px 10px rgba(11,28,46,0.08)}
+html{font-size:15px}
+body{font-family:"Nunito",sans-serif;background:var(--navy);color:#fff;min-height:100vh;display:flex;flex-direction:column}
+a{text-decoration:none;color:var(--sky)}
+/* TOP BAR */
+.topbar{background:#0D2140;border-bottom:2px solid rgba(30,95,191,0.4);padding:8px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;flex-shrink:0}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.tb-logo{font-family:"Syne",sans-serif;font-size:1.1rem;font-weight:800;color:#fff}
+.tb-logo span{color:var(--sky)}
+.role-badge{padding:3px 10px;border-radius:999px;font-size:10px;font-weight:700;background:rgba(90,171,255,0.15);border:1px solid rgba(90,171,255,0.35);color:var(--sky)}
+.tb-back{font-size:11px;color:rgba(255,255,255,0.5);padding:4px 10px;border-radius:6px;border:0.5px solid rgba(255,255,255,0.15);cursor:pointer;transition:all .15s}
+.tb-back:hover{background:rgba(255,255,255,0.08);color:#fff}
+/* FILTERS */
+.filters{background:#0D2140;border-bottom:1px solid rgba(30,95,191,0.2);padding:7px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0}
+.filters label{font-size:10px;color:rgba(255,255,255,0.45);font-weight:600;text-transform:uppercase;letter-spacing:.07em}
+.filters select{font-size:11px;padding:3px 8px;border-radius:6px;border:0.5px solid rgba(90,171,255,0.3);background:rgba(255,255,255,0.06);color:#fff;cursor:pointer}
+.filters select option{background:#0D2140;color:#fff}
+/* TABS */
+.tabs{background:#0B1C2E;border-bottom:1px solid rgba(30,95,191,0.2);padding:0 16px;display:flex;gap:2px;overflow-x:auto;flex-shrink:0}
+.tab{padding:8px 14px;font-size:11px;font-weight:600;color:rgba(255,255,255,0.45);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s}
+.tab.on{color:var(--sky);border-bottom-color:var(--sky)}
+.tab:hover:not(.on){color:rgba(255,255,255,0.75)}
+/* BODY */
+.body{padding:14px 16px;flex:1;overflow-y:auto}
+.view{display:none}.view.on{display:block}
+/* KPI ROW */
+.krow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.kpi{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 13px}
+.kl{font-size:10px;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px}
+.kv{font-size:20px;font-weight:700;color:#fff;line-height:1.1}
+.kd{font-size:10px;margin-top:3px}.kg{color:#4ade80}.kr{color:#f87171}.kn{color:rgba(255,255,255,0.4)}
+/* CHART CARDS */
+.crow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.cc{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:13px}
+.cc.full{grid-column:1/-1}
+.ct{font-size:12px;font-weight:600;color:rgba(255,255,255,0.85);margin-bottom:8px}
+canvas{display:block;width:100%!important}
+/* TABLES */
+.tc{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:13px;margin-bottom:12px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed}
+th{text-align:left;padding:5px 8px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,0.4);border-bottom:0.5px solid rgba(255,255,255,0.1)}
+td{padding:7px 8px;border-bottom:0.5px solid rgba(255,255,255,0.06);color:rgba(255,255,255,0.7);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
+td.b{color:#fff;font-weight:600}
+.bx{display:inline-flex;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:600}
+.ok{background:rgba(74,222,128,0.15);color:#4ade80}
+.wa{background:rgba(251,191,36,0.15);color:#fbbf24}
+.er{background:rgba(248,113,113,0.15);color:#f87171}
+.in{background:rgba(90,171,255,0.15);color:var(--sky)}
+/* BAR ROWS */
+.br{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.bl{font-size:10px;color:rgba(255,255,255,0.55);width:96px;flex-shrink:0;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bg-b{flex:1;height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden}
+.bf{height:100%;border-radius:4px}
+.bv{font-size:10px;color:rgba(255,255,255,0.4);width:52px;flex-shrink:0}
+/* SEGMENTS */
+.seg{display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap}
+.sp{padding:4px 11px;border-radius:999px;font-size:11px;cursor:pointer;border:0.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.5)}
+.sp.on{background:rgba(90,171,255,0.2);border-color:rgba(90,171,255,0.5);color:var(--sky)}
+/* MISC */
+.alert-row{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:10px;border:0.5px solid rgba(255,255,255,0.1);margin-bottom:8px;background:rgba(255,255,255,0.03)}
+.at{font-size:12px;font-weight:600;color:#fbbf24;margin-bottom:2px}
+.as{font-size:11px;color:rgba(255,255,255,0.55)}
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.calc-card{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px}
+.inp-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.inp-lbl{font-size:11px;color:rgba(255,255,255,0.55)}
+.inp-row input,.inp-row select{font-size:11px;padding:4px 8px;border-radius:6px;border:0.5px solid rgba(90,171,255,0.3);background:rgba(255,255,255,0.06);color:#fff;width:110px}
+.result-ok{background:rgba(74,222,128,0.12);border:0.5px solid rgba(74,222,128,0.3);border-radius:10px;padding:10px;text-align:center;margin-top:8px}
+.result-warn{background:rgba(248,113,113,0.12);border:0.5px solid rgba(248,113,113,0.3);border-radius:10px;padding:10px;text-align:center;margin-top:8px}
+.rv{font-size:18px;font-weight:700}.rl{font-size:10px;margin-top:2px;color:rgba(255,255,255,0.5)}
+@media(max-width:640px){.krow{grid-template-columns:1fr 1fr}.crow{grid-template-columns:1fr}.calc-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="tb-logo">Fuel<span>Ops</span></span>
+    <span class="role-badge">Fuel Manager</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <span style="font-size:11px;color:rgba(255,255,255,0.35)">A320 Family Fleet</span>
+    <a class="tb-back" href="index.html">&#8592; All modules</a>
+  </div>
+</div>
+<div class="filters"><label>Period</label><select><option>Today</option><option>This month</option><option>Last 30d</option><option>YTD</option></select><label>Station</label><select><option>All stations</option><option>BOM</option><option>DEL</option><option>BLR</option><option>HYD</option></select></div>
+<div class="tabs"><div class="tab on" onclick="selTab(this,0)">Daily operations</div><div class="tab" onclick="selTab(this,1)">Invoice reconciliation</div><div class="tab" onclick="selTab(this,2)">Tankering</div></div>
+<div class="body">
+<div class="view on">
+  <div class="krow">
+    <div class="kpi"><div class="kl">Today uplifts</div><div class="kv">1,842 kg</div><div class="kd kn">38 sectors</div></div>
+    <div class="kpi"><div class="kl">Open variances</div><div class="kv">12</div><div class="kd kr">4 critical</div></div>
+    <div class="kpi"><div class="kl">Extra fuel today</div><div class="kv">18 sectors</div><div class="kd kn">47% WX coded</div></div>
+    <div class="kpi"><div class="kl">Tankering saving</div><div class="kv">&#8377;1.2 L</div><div class="kd kg">Est. today</div></div>
+  </div>
+  <div class="crow">
+    <div class="cc"><div class="ct">Extra fuel by category — this month</div><canvas id="fm1" height="160"></canvas></div>
+    <div class="cc"><div class="ct">Daily variance trend (%)</div><canvas id="fm2" height="160"></canvas></div>
+  </div>
+  <div class="tc"><div class="ct">Extra fuel uplift log — recent</div>
+    <table><thead><tr><th style="width:10%">Flight</th><th style="width:10%">Date</th><th style="width:9%">Tail</th><th style="width:11%">Extra (kg)</th><th style="width:11%">Code</th><th style="width:30%">Reason</th><th style="width:10%">Pilot</th><th style="width:9%">Status</th></tr></thead>
+    <tbody>
+      <tr><td class="b">AI 205</td><td>14 Jun</td><td>VT-IDB</td><td><span class="bx wa">+420</span></td><td><span class="bx er">WX-DST</span></td><td style="white-space:normal">Weather at destination BLR — SIGMET active</td><td>Sharma</td><td><span class="bx in">Logged</span></td></tr>
+      <tr><td class="b">AI 312</td><td>14 Jun</td><td>VT-IDC</td><td><span class="bx wa">+280</span></td><td><span class="bx wa">ATC-DLY</span></td><td style="white-space:normal">Anticipated 30-min slot delay</td><td>Singh</td><td><span class="bx in">Logged</span></td></tr>
+      <tr><td class="b">AI 447</td><td>13 Jun</td><td>VT-IDD</td><td><span class="bx er">+650</span></td><td><span class="bx er">WX-WIN</span></td><td style="white-space:normal">Strong westerly headwinds above FL280</td><td>Nair</td><td><span class="bx wa">Review</span></td></tr>
+      <tr><td class="b">AI 518</td><td>13 Jun</td><td>VT-IDE</td><td><span class="bx wa">+190</span></td><td><span class="bx in">PD-CAP</span></td><td style="white-space:normal">Captain discretion — precautionary</td><td>Reddy</td><td><span class="bx in">Logged</span></td></tr>
+      <tr><td class="b">AI 621</td><td>12 Jun</td><td>VT-IDF</td><td><span class="bx er">+840</span></td><td><span class="bx wa">ATC-RRR</span></td><td style="white-space:normal">ATC re-route via GUNDA adding 45 NM</td><td>Pillai</td><td><span class="bx wa">Review</span></td></tr>
+    </tbody></table>
+  </div>
+</div>
+<div class="view">
+  <div class="krow">
+    <div class="kpi"><div class="kl">Pending invoices</div><div class="kv">23</div><div class="kd kr">&#8377;4.8 Cr outstanding</div></div>
+    <div class="kpi"><div class="kl">Disputed</div><div class="kv">5</div><div class="kd kr">&#8377;1.2 Cr in dispute</div></div>
+    <div class="kpi"><div class="kl">SG mismatches</div><div class="kv">8</div><div class="kd kn">Auto-corrected</div></div>
+    <div class="kpi"><div class="kl">Paid this month</div><div class="kv">&#8377;18.4 Cr</div><div class="kd kg">On time</div></div>
+  </div>
+  <div class="cc full" style="margin-bottom:12px"><div class="ct">Invoice status by supplier</div>
+    <div class="br"><div class="bl">Indian Oil</div><div class="bg-b"><div class="bf" style="width:85%;background:#4ade80"></div></div><div class="bv">12 paid</div></div>
+    <div class="br"><div class="bl">BPCL</div><div class="bg-b"><div class="bf" style="width:60%;background:#fbbf24"></div></div><div class="bv">8 pending</div></div>
+    <div class="br"><div class="bl">HPCL</div><div class="bg-b"><div class="bf" style="width:40%;background:#f87171"></div></div><div class="bv">3 disputed</div></div>
+  </div>
+</div>
+<div class="view">
+  <div class="calc-grid">
+    <div class="calc-card">
+      <div class="ct" style="margin-bottom:10px">&#8986; Live tankering calculator</div>
+      <div class="inp-row"><span class="inp-lbl">Origin &#8377;/kg</span><input type="number" id="tk-op" value="80" oninput="calcT()"></div>
+      <div class="inp-row"><span class="inp-lbl">Destination &#8377;/kg</span><input type="number" id="tk-dp" value="86" oninput="calcT()"></div>
+      <div class="inp-row"><span class="inp-lbl">Extra uplift (kg)</span><input type="number" id="tk-ex" value="1500" oninput="calcT()"></div>
+      <div class="inp-row"><span class="inp-lbl">Burn penalty (kg/1000kg)</span><input type="number" id="tk-pen" value="48" oninput="calcT()"></div>
+      <div id="tk-res"></div>
+    </div>
+    <div class="cc"><div class="ct">Route price differentials &#8377;/kg</div><canvas id="fm3" height="200"></canvas></div>
+  </div>
+</div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+var _charts={};
+function gc(id){var c=document.getElementById(id);if(!c)return null;if(_charts[id]){_charts[id].destroy();delete _charts[id];}return c.getContext('2d');}
+function rn(v,p){p=p||0.08;return+(v+(Math.random()-0.5)*v*p).toFixed(1);}
+function ri(v,p){p=p||0.1;return Math.round(v+(Math.random()-0.5)*v*p);}
+function fg(){return'rgba(255,255,255,0.5)';}
+function gr(){return'rgba(255,255,255,0.06)';}
+function bo(ymin){var o={responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:gr()},ticks:{color:fg(),font:{size:9}}},y:{grid:{color:gr()},ticks:{color:fg(),font:{size:9}}}}};if(ymin!==undefined)o.scales.y.min=ymin;return o;}
+function selTab(el,idx){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  el.classList.add('on');
+  var views=document.querySelectorAll('.view');
+  if(views[idx])views[idx].classList.add('on');
+  if(typeof onTabChange==='function')onTabChange(idx);
+}
+
+function calcT(){
+  var op=+document.getElementById('tk-op').value||80;
+  var dp=+document.getElementById('tk-dp').value||86;
+  var ex=+document.getElementById('tk-ex').value||1500;
+  var pen=+document.getElementById('tk-pen').value||48;
+  var gross=ex*(dp-op);
+  var penalty=(ex/1000)*pen*op;
+  var net=gross-penalty;
+  var el=document.getElementById('tk-res');
+  if(net>0){el.className='result-ok';el.innerHTML='<div class="rv">&#8377;'+net.toLocaleString('en-IN',{maximumFractionDigits:0})+'</div><div class="rl">Net saving — Tankering recommended</div>';}
+  else{el.className='result-warn';el.innerHTML='<div class="rv">Not viable</div><div class="rl">Penalty exceeds saving</div>';}
+}
+function initCharts(){
+  var o=bo();
+  var cats=['Weather','ATC','Technical','Discretion','Ops','NOTAM'];
+  var c1=gc('fm1');if(c1)_charts.fm1=new Chart(c1,{type:'doughnut',data:{labels:cats,datasets:[{data:[312,189,46,113,85,38],backgroundColor:['#5AABFF','#fbbf24','#f87171','#7F77DD','#1D9E75','#D4537E'],borderWidth:1}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:true,position:'right',labels:{color:fg(),font:{size:9},boxWidth:10}}}}});
+  var c2=gc('fm2');if(c2)_charts.fm2=new Chart(c2,{type:'line',data:{labels:Array.from({length:14},(_,i)=>i+1+''),datasets:[{data:Array.from({length:14},()=>rn(0,5)*(Math.random()>0.55?1:-1)),borderColor:'#5AABFF',tension:0.3,fill:true,backgroundColor:'#5AABFF15',pointRadius:2}]},options:{...o,...{plugins:{legend:{display:false}}}}});
+  var c3=gc('fm3');if(c3)_charts.fm3=new Chart(c3,{type:'bar',data:{labels:['BOM-DEL','BOM-BLR','DEL-CCU','HYD-MAA','BLR-HYD','DEL-BLR','CCU-BLR','MAA-DEL'],datasets:[{data:['BOM-DEL','BOM-BLR','DEL-CCU','HYD-MAA','BLR-HYD','DEL-BLR','CCU-BLR','MAA-DEL'].map(()=>rn(4,0.6)),backgroundColor:['BOM-DEL','BOM-BLR','DEL-CCU','HYD-MAA','BLR-HYD','DEL-BLR','CCU-BLR','MAA-DEL'].map(()=>'#4ade8066'),borderColor:'#4ade80',borderWidth:1}]},options:{...o,indexAxis:'y'}});
+  calcT();
+}
+window.addEventListener('load',function(){if(typeof initCharts==='function')initCharts();});
+</script>
+</body>
+</html>

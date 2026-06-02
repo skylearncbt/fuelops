@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FuelOps — Potable Water</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#0B1C2E;--blue:#1A5FBF;--blue2:#124A99;--sky:#5AABFF;--green:#1D9E75;
+  --amber:#C07800;--red:#E24B4A;--purple:#7F77DD;--text:#111827;--text2:#374151;
+  --text3:#6B7280;--border:#D1D9E0;--bg:#F5F6F8;--bg2:#FFFFFF;--card-shadow:0 2px 10px rgba(11,28,46,0.08)}
+html{font-size:15px}
+body{font-family:"Nunito",sans-serif;background:var(--navy);color:#fff;min-height:100vh;display:flex;flex-direction:column}
+a{text-decoration:none;color:var(--sky)}
+/* TOP BAR */
+.topbar{background:#0D2140;border-bottom:2px solid rgba(30,95,191,0.4);padding:8px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;flex-shrink:0}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.tb-logo{font-family:"Syne",sans-serif;font-size:1.1rem;font-weight:800;color:#fff}
+.tb-logo span{color:var(--sky)}
+.role-badge{padding:3px 10px;border-radius:999px;font-size:10px;font-weight:700;background:rgba(90,171,255,0.15);border:1px solid rgba(90,171,255,0.35);color:var(--sky)}
+.tb-back{font-size:11px;color:rgba(255,255,255,0.5);padding:4px 10px;border-radius:6px;border:0.5px solid rgba(255,255,255,0.15);cursor:pointer;transition:all .15s}
+.tb-back:hover{background:rgba(255,255,255,0.08);color:#fff}
+/* FILTERS */
+.filters{background:#0D2140;border-bottom:1px solid rgba(30,95,191,0.2);padding:7px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0}
+.filters label{font-size:10px;color:rgba(255,255,255,0.45);font-weight:600;text-transform:uppercase;letter-spacing:.07em}
+.filters select{font-size:11px;padding:3px 8px;border-radius:6px;border:0.5px solid rgba(90,171,255,0.3);background:rgba(255,255,255,0.06);color:#fff;cursor:pointer}
+.filters select option{background:#0D2140;color:#fff}
+/* TABS */
+.tabs{background:#0B1C2E;border-bottom:1px solid rgba(30,95,191,0.2);padding:0 16px;display:flex;gap:2px;overflow-x:auto;flex-shrink:0}
+.tab{padding:8px 14px;font-size:11px;font-weight:600;color:rgba(255,255,255,0.45);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s}
+.tab.on{color:var(--sky);border-bottom-color:var(--sky)}
+.tab:hover:not(.on){color:rgba(255,255,255,0.75)}
+/* BODY */
+.body{padding:14px 16px;flex:1;overflow-y:auto}
+.view{display:none}.view.on{display:block}
+/* KPI ROW */
+.krow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.kpi{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 13px}
+.kl{font-size:10px;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px}
+.kv{font-size:20px;font-weight:700;color:#fff;line-height:1.1}
+.kd{font-size:10px;margin-top:3px}.kg{color:#4ade80}.kr{color:#f87171}.kn{color:rgba(255,255,255,0.4)}
+/* CHART CARDS */
+.crow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.cc{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:13px}
+.cc.full{grid-column:1/-1}
+.ct{font-size:12px;font-weight:600;color:rgba(255,255,255,0.85);margin-bottom:8px}
+canvas{display:block;width:100%!important}
+/* TABLES */
+.tc{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:13px;margin-bottom:12px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed}
+th{text-align:left;padding:5px 8px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,0.4);border-bottom:0.5px solid rgba(255,255,255,0.1)}
+td{padding:7px 8px;border-bottom:0.5px solid rgba(255,255,255,0.06);color:rgba(255,255,255,0.7);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
+td.b{color:#fff;font-weight:600}
+.bx{display:inline-flex;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:600}
+.ok{background:rgba(74,222,128,0.15);color:#4ade80}
+.wa{background:rgba(251,191,36,0.15);color:#fbbf24}
+.er{background:rgba(248,113,113,0.15);color:#f87171}
+.in{background:rgba(90,171,255,0.15);color:var(--sky)}
+/* BAR ROWS */
+.br{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.bl{font-size:10px;color:rgba(255,255,255,0.55);width:96px;flex-shrink:0;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bg-b{flex:1;height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden}
+.bf{height:100%;border-radius:4px}
+.bv{font-size:10px;color:rgba(255,255,255,0.4);width:52px;flex-shrink:0}
+/* SEGMENTS */
+.seg{display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap}
+.sp{padding:4px 11px;border-radius:999px;font-size:11px;cursor:pointer;border:0.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.5)}
+.sp.on{background:rgba(90,171,255,0.2);border-color:rgba(90,171,255,0.5);color:var(--sky)}
+/* MISC */
+.alert-row{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:10px;border:0.5px solid rgba(255,255,255,0.1);margin-bottom:8px;background:rgba(255,255,255,0.03)}
+.at{font-size:12px;font-weight:600;color:#fbbf24;margin-bottom:2px}
+.as{font-size:11px;color:rgba(255,255,255,0.55)}
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.calc-card{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px}
+.inp-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.inp-lbl{font-size:11px;color:rgba(255,255,255,0.55)}
+.inp-row input,.inp-row select{font-size:11px;padding:4px 8px;border-radius:6px;border:0.5px solid rgba(90,171,255,0.3);background:rgba(255,255,255,0.06);color:#fff;width:110px}
+.result-ok{background:rgba(74,222,128,0.12);border:0.5px solid rgba(74,222,128,0.3);border-radius:10px;padding:10px;text-align:center;margin-top:8px}
+.result-warn{background:rgba(248,113,113,0.12);border:0.5px solid rgba(248,113,113,0.3);border-radius:10px;padding:10px;text-align:center;margin-top:8px}
+.rv{font-size:18px;font-weight:700}.rl{font-size:10px;margin-top:2px;color:rgba(255,255,255,0.5)}
+@media(max-width:640px){.krow{grid-template-columns:1fr 1fr}.crow{grid-template-columns:1fr}.calc-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="tb-logo">Fuel<span>Ops</span></span>
+    <span class="role-badge">Water Uplift</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <span style="font-size:11px;color:rgba(255,255,255,0.35)">A320 Family Fleet</span>
+    <a class="tb-back" href="index.html">&#8592; All modules</a>
+  </div>
+</div>
+<div class="filters"><label>Period</label><select><option>This month</option><option>Last 90d</option><option>YTD</option></select></div>
+<div class="tabs"><div class="tab on" onclick="selTab(this,0)">Route & airport uplift</div><div class="tab" onclick="selTab(this,1)">Vendor compliance</div></div>
+<div class="body">
+<div class="view on">
+  <div class="krow">
+    <div class="kpi"><div class="kl">Total uplift YTD</div><div class="kv">1,842 kL</div><div class="kd kn">A320 fleet</div></div>
+    <div class="kpi"><div class="kl">Avg per turnaround</div><div class="kv">84 L</div><div class="kd kg">Within range</div></div>
+    <div class="kpi"><div class="kl">Cert compliance</div><div class="kv">96.4%</div><div class="kd kr">3 expiring soon</div></div>
+    <div class="kpi"><div class="kl">Quality flags</div><div class="kv">2</div><div class="kd kr">Action required</div></div>
+  </div>
+  <div class="crow">
+    <div class="cc"><div class="ct">Route-wise avg water uplift (litres/sector)</div><canvas id="w1" height="160"></canvas></div>
+    <div class="cc"><div class="ct">Airport-wise monthly uplift (kL)</div><canvas id="w2" height="160"></canvas></div>
+  </div>
+  <div class="cc full" style="margin-bottom:12px"><div class="ct">Water uplift vs passenger load factor — route correlation</div>
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:4px">
+      <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:10px">
+        <div style="font-size:12px;font-weight:600;color:#fff;margin-bottom:3px">BOM-DEL</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.45);margin-bottom:6px">LF 84% &middot; 156 pax</div>
+        <div style="height:5px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;margin-bottom:4px"><div style="width:72%;height:100%;background:#5AABFF;border-radius:3px"></div></div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.55)">96 litres</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:10px">
+        <div style="font-size:12px;font-weight:600;color:#fff;margin-bottom:3px">BOM-BLR</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.45);margin-bottom:6px">LF 79% &middot; 146 pax</div>
+        <div style="height:5px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;margin-bottom:4px"><div style="width:65%;height:100%;background:#5AABFF;border-radius:3px"></div></div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.55)">88 litres</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:10px">
+        <div style="font-size:12px;font-weight:600;color:#fff;margin-bottom:3px">DEL-CCU</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.45);margin-bottom:6px">LF 91% &middot; 168 pax</div>
+        <div style="height:5px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;margin-bottom:4px"><div style="width:84%;height:100%;background:#4ade80;border-radius:3px"></div></div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.55)">102 litres</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:10px">
+        <div style="font-size:12px;font-weight:600;color:#fff;margin-bottom:3px">HYD-MAA</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.45);margin-bottom:6px">LF 68% &middot; 126 pax</div>
+        <div style="height:5px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;margin-bottom:4px"><div style="width:50%;height:100%;background:#fbbf24;border-radius:3px"></div></div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.55)">74 litres</div>
+      </div>
+    </div>
+  </div>
+  <div class="tc"><div class="ct">Airport vendor compliance</div>
+    <table><thead><tr><th style="width:10%">Airport</th><th style="width:22%">Vendor</th><th style="width:14%">Cert expiry</th><th style="width:13%">Status</th><th style="width:12%">Avg uplift</th><th style="width:12%">Uplifts/mo</th><th style="width:17%">Quality</th></tr></thead>
+    <tbody id="water-tbl"></tbody></table>
+  </div>
+</div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+var _charts={};
+function gc(id){var c=document.getElementById(id);if(!c)return null;if(_charts[id]){_charts[id].destroy();delete _charts[id];}return c.getContext('2d');}
+function rn(v,p){p=p||0.08;return+(v+(Math.random()-0.5)*v*p).toFixed(1);}
+function ri(v,p){p=p||0.1;return Math.round(v+(Math.random()-0.5)*v*p);}
+function fg(){return'rgba(255,255,255,0.5)';}
+function gr(){return'rgba(255,255,255,0.06)';}
+function bo(ymin){var o={responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:gr()},ticks:{color:fg(),font:{size:9}}},y:{grid:{color:gr()},ticks:{color:fg(),font:{size:9}}}}};if(ymin!==undefined)o.scales.y.min=ymin;return o;}
+function selTab(el,idx){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  el.classList.add('on');
+  var views=document.querySelectorAll('.view');
+  if(views[idx])views[idx].classList.add('on');
+  if(typeof onTabChange==='function')onTabChange(idx);
+}
+
+var airports=['BOM','DEL','BLR','HYD','MAA','CCU','AMD','PNQ'];
+var vendors=['Indian Rail Water','Delhi Jal Seva','BLR Airport Svc','HYD Catering Co','MAA Aviation Svc','CCU Water Vendor','AMD Ground Hdlg','PNQ Airport Svc'];
+var routes=['BOM-DEL','BOM-BLR','DEL-CCU','HYD-MAA','BLR-HYD','DEL-BLR','CCU-BLR','MAA-DEL'];
+var bases=['BOM','DEL','BLR','HYD'];
+var months=['Jan','Feb','Mar','Apr','May','Jun'];
+
+function initCharts(){
+  var o=bo();
+  var c1=gc('w1');if(c1)_charts.w1=new Chart(c1,{type:'bar',data:{labels:routes,datasets:[{data:routes.map(()=>ri(85,0.2)),backgroundColor:'#1D9E7566',borderColor:'#1D9E75',borderWidth:1}]},options:{...o,...{scales:{x:{grid:{color:gr()},ticks:{color:fg(),font:{size:9}}},y:{grid:{color:gr()},ticks:{color:fg(),font:{size:9}},min:60,title:{display:true,text:'Litres',color:fg(),font:{size:9}}}}}}});
+  var c2=gc('w2');if(c2)_charts.w2=new Chart(c2,{type:'bar',data:{labels:months,datasets:bases.map((b,i)=>{return{label:b,data:months.map(()=>ri(280,0.2)),backgroundColor:['#5AABFF55','#1D9E7555','#fbbf2455','#7F77DD55'][i]};})},options:{...o,scales:{x:{...o.scales.x,stacked:true},y:{...o.scales.y,stacked:true}},plugins:{legend:{display:true,labels:{color:fg(),font:{size:9}}}}}});
+  document.getElementById('water-tbl').innerHTML=airports.map((a,i)=>{
+    var days=ri(45,0.8);var cls=days<14?'er':days<30?'wa':'ok';
+    var qflag=Math.random()>0.85;
+    return'<tr><td class="b">'+a+'</td><td>'+vendors[i]+'</td><td>'+(cls==='er'?'<span class="bx er">EXPIRED</span>':cls==='wa'?'<span class="bx wa">'+days+'d left</span>':'<span class="bx ok">'+days+'d left</span>')+'</td><td><span class="bx '+(cls==='ok'?'ok':cls)+'">'+( cls==='ok'?'Valid':cls==='wa'?'Expiring':'Expired')+'</span></td><td>'+ri(84,0.2)+' L</td><td>'+ri(42,0.3)+'</td><td>'+(qflag?'<span class="bx er">Flag</span>':'<span class="bx ok">Clear</span>')+'</td></tr>';
+  }).join('');
+}
+window.addEventListener('load',function(){if(typeof initCharts==='function')initCharts();});
+</script>
+</body>
+</html>
