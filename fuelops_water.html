@@ -89,7 +89,7 @@ td.b{color:#FFFFFF;font-weight:700;font-size:12px}
     <span class="role-badge">Water Uplift</span>
   </div>
   <div style="display:flex;align-items:center;gap:8px">
-    <span id="api-status" style="font-size:11px;margin-right:8px">&#9679;</span><span style="font-size:12px;color:rgba(255,255,255,0.60)">A320 Family Fleet</span>
+    <span id="api-status" style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.5);margin-right:4px">&#9679; Connecting...</span><span style="font-size:12px;color:rgba(255,255,255,0.60)">A320 Family Fleet</span>
     <a class="tb-back" href="index.html">&#8592; All modules</a>
   </div>
 </div>
@@ -218,15 +218,21 @@ async function apiPost(path, body) {
 
 // Check API health on load
 (async function() {
-  const health = await apiGet('/api/health');
   const indicator = document.getElementById('api-status');
+  const health = await apiGet('/api/health');
   if (indicator) {
     if (health && health.status === 'ok') {
-      indicator.innerHTML = '<span style="color:#4ade80">&#9679; Live data</span>';
-      indicator.title = 'Connected to ' + FUELOPS_API;
+      indicator.style.background = 'rgba(74,222,128,0.2)';
+      indicator.style.border = '1px solid rgba(74,222,128,0.5)';
+      indicator.style.color = '#4ade80';
+      indicator.innerHTML = '&#9679; Live data';
+      indicator.title = 'Connected to Supabase database';
     } else {
-      indicator.innerHTML = '<span style="color:#fbbf24">&#9679; Sample data</span>';
-      indicator.title = 'API unavailable — showing sample data';
+      indicator.style.background = 'rgba(251,191,36,0.2)';
+      indicator.style.border = '1px solid rgba(251,191,36,0.5)';
+      indicator.style.color = '#fbbf24';
+      indicator.innerHTML = '&#9679; Sample data';
+      indicator.title = 'API offline — showing sample data';
     }
   }
 })();
