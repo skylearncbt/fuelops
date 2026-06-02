@@ -89,7 +89,7 @@ td.b{color:#FFFFFF;font-weight:700;font-size:12px}
     <span class="role-badge">CEO / Board</span>
   </div>
   <div style="display:flex;align-items:center;gap:8px">
-    <span style="font-size:12px;color:rgba(255,255,255,0.60)">A320 Family Fleet</span>
+    <span id="api-status" style="font-size:11px;margin-right:8px">&#9679;</span><span style="font-size:12px;color:rgba(255,255,255,0.60)">A320 Family Fleet</span>
     <a class="tb-back" href="index.html">&#8592; All modules</a>
   </div>
 </div>
@@ -152,6 +152,45 @@ function selTab(el,idx){
   if(typeof onTabChange==='function')onTabChange(idx);
 }
 
+async function loadLiveData() {
+  // Try to get real data from API
+  const exec = await apiGet('/api/dashboard/executive?period=ytd');
+  if (exec && exec.kpi) {
+    // Update KPI cards with real data
+    const kpis = document.querySelectorAll('.kpi');
+    if (kpis[0]) kpis[0].querySelector('.kv').textContent = '₹' + (exec.kpi.fuel_cost_cr || '—') + ' Cr';
+    if (kpis[1]) kpis[1].querySelector('.kv').textContent = exec.kpi.avg_burn_kg_hr || '—';
+    if (kpis[3]) kpis[3].querySelector('.kv').textContent = exec.kpi.extra_events || '—';
+
+    // Update monthly chart if data available
+    if (exec.monthly && exec.monthly.length > 0 && window._charts && window._charts['c-exec1']) {
+      const labels = exec.monthly.map(m => m.month);
+      const data   = exec.monthly.map(m => m.cost_cr);
+      window._charts['c-exec1'].data.labels = labels;
+      window._charts['c-exec1'].data.datasets[0].data = data;
+      window._charts['c-exec1'].update();
+    }
+
+    // Update airport table
+    if (exec.topAirports && exec.topAirports.length > 0) {
+      const tbody = document.querySelector('tbody');
+      if (tbody) {
+        tbody.innerHTML = exec.topAirports.slice(0,5).map(a => `
+          <tr>
+            <td class="b">${a.airport}</td>
+            <td>${a.uplift_mt || '—'}</td>
+            <td>${a.avg_price || '—'}</td>
+            <td>₹${a.cost_cr || '—'} Cr</td>
+            <td><span class="bx in">Live</span></td>
+          </tr>`).join('');
+      }
+    }
+    console.log('Executive dashboard loaded live data from API');
+  } else {
+    console.log('API returned no data — showing sample data');
+  }
+}
+
 function initCharts(){
   var m=['Jan','Feb','Mar','Apr','May','Jun'],r=['BOM-DEL','BOM-BLR','DEL-CCU','HYD-MAA','BLR-HYD','DEL-BLR','CCU-BLR','MAA-DEL'],o=bo();
   var c1=gc('e1');if(c1)_charts.e1=new Chart(c1,{type:'bar',data:{labels:m,datasets:[{label:'Actual',data:m.map(()=>rn(23.8,0.08)),backgroundColor:'#5AABFF66'},{label:'Budget',data:[23,23,23,23,23,23],type:'line',borderColor:'#f87171',borderDash:[4,4],pointRadius:0,fill:false,tension:0}]},options:{...o,plugins:{legend:{display:true,labels:{color:fg(),font:{size:9}}}}}});
@@ -161,7 +200,62 @@ function initCharts(){
   var c5=gc('e5');if(c5)_charts.e5=new Chart(c5,{type:'line',data:{labels:m,datasets:[{data:m.map(()=>rn(0.318,0.04)),borderColor:'#5AABFF',tension:0.3,fill:true,backgroundColor:'#5AABFF15',pointRadius:3}]},options:{...o,...{scales:{x:{grid:{color:gr()},ticks:{color:fg(),font:{size:9}}},y:{grid:{color:gr()},ticks:{color:fg(),font:{size:9}},min:0.31,max:0.33}}}}});
   var c6=gc('e6');if(c6)_charts.e6=new Chart(c6,{type:'bar',data:{labels:m,datasets:[{data:m.map(()=>ri(64800,0.06)),backgroundColor:'#f8711166',borderColor:'#f87171',borderWidth:1}]},options:o});
 }
-window.addEventListener('load',function(){if(typeof initCharts==='function')initCharts();});
+window.addEventListener('load',function(){if(typeof initCharts==='function'){initCharts();setTimeout(loadLiveData,500);}});
+</script>
+
+<script>
+// ── FuelOps Live API Configuration ─────────────────────────────────────
+const FUELOPS_API = 'https://fuelops-delta.vercel.app';
+const FUELOPS_TOKEN = localStorage.getItem('fuelops_token') || '';
+
+async function apiGet(path) {
+  try {
+    const res = await fetch(FUELOPS_API + path, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(FUELOPS_TOKEN ? {'Authorization': 'Bearer ' + FUELOPS_TOKEN} : {})
+      }
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch(e) {
+    console.warn('FuelOps API unavailable — using sample data:', e.message);
+    return null;
+  }
+}
+
+async function apiPost(path, body) {
+  try {
+    const res = await fetch(FUELOPS_API + path, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(FUELOPS_TOKEN ? {'Authorization': 'Bearer ' + FUELOPS_TOKEN} : {})
+      },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch(e) {
+    console.warn('FuelOps API post failed:', e.message);
+    return null;
+  }
+}
+
+// Check API health on load
+(async function() {
+  const health = await apiGet('/api/health');
+  const indicator = document.getElementById('api-status');
+  if (indicator) {
+    if (health && health.status === 'ok') {
+      indicator.innerHTML = '<span style="color:#4ade80">&#9679; Live data</span>';
+      indicator.title = 'Connected to ' + FUELOPS_API;
+    } else {
+      indicator.innerHTML = '<span style="color:#fbbf24">&#9679; Sample data</span>';
+      indicator.title = 'API unavailable — showing sample data';
+    }
+  }
+})();
 </script>
 </body>
 </html>
