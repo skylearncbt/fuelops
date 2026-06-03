@@ -179,7 +179,7 @@ window.addEventListener('load',function(){if(typeof initCharts==='function')init
 
 <script>
 // ── FuelOps Live API Configuration ─────────────────────────────────────
-const FUELOPS_API = 'https://fuelops-delta.vercel.app';
+const FUELOPS_API = 'https://fuelops-api-eawf.onrender.com';
 const FUELOPS_TOKEN = localStorage.getItem('fuelops_token') || '';
 
 async function apiGet(path) {
@@ -219,7 +219,7 @@ async function apiPost(path, body) {
 // Check API health on load
 (async function() {
   const indicator = document.getElementById('api-status');
-  const health = await apiGet('/api/health');
+  const health = await apiGet('/health');
   if (indicator) {
     if (health && health.status === 'ok') {
       indicator.style.background = 'rgba(74,222,128,0.2)';
